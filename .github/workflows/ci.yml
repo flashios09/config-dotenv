@@ -33,8 +33,7 @@ jobs:
       - name: Already existent a `dotenv` bin !!!
         run: |
           echo $PATH
-          echo which dotenv
-          dotenv --help
+          which dotenv
       # - name: Install the dotenv command
       #   run: |
       #     chmod +x ./script.sh
