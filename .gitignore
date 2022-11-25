@@ -1,0 +1,2 @@
+# ignore `.gfs` git file status folder
+.gfs/

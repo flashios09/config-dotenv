@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  ci:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup git user
+        run: |
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+
+      - name: Install and run shellcheck on ./script.sh
+        run: |
+          sudo apt-get -qq install shellcheck -y > /dev/null
+          shellcheck --version
+          shellcheck ./script.sh
+
+      - name: Install and run shfmt on ./script.sh
+        run: |
+          sudo apt-get -qq install shfmt -y > /dev/null
+          shfmt --version
+          shfmt -i 4 -d ./script.sh
+
+      - name: Install the dotenv command
+        run: |
+          chmod +x ./script.sh
+          ln -s "$PWD/script.sh" /usr/local/bin/dotenv
+          which dotenv
+
+      - name: Move the ./test folder
+        run: |
+          cd ./test
+
+      - name: Test `dotenv init` command
+        run: |
+          dotenv init
