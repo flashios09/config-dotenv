@@ -38,8 +38,9 @@ jobs:
 
       - name: Move to the `./test` folder
         run: |
-          cd ./test
+          cd test
 
       - name: Test `dotenv init` command
         run: |
+          pwd
           dotenv init
