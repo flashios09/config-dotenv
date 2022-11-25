@@ -36,11 +36,7 @@ jobs:
           sudo ln -s "$PWD/script.sh" /usr/local/sbin/dotenv
           which dotenv
 
-      - name: Move to the `./test` folder
-        run: |
-          cd test
-
       - name: Test `dotenv init` command
+        working-directory: ./test
         run: |
-          pwd
           dotenv init
