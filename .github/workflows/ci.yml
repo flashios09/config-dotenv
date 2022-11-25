@@ -40,3 +40,8 @@ jobs:
         working-directory: ./test
         run: |
           dotenv init
+
+      - name: Test `dotenv init` command on preexistent `.env` file
+        working-directory: ./test
+        run: |
+          dotenv init
