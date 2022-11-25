@@ -30,16 +30,21 @@ jobs:
           shfmt --version
           shfmt -i 4 -d ./script.sh
 
-      - name: Install the dotenv command
+      - name: Already existent a `dotenv` bin !!!
         run: |
-          chmod +x ./script.sh
-          ln -s "$PWD/script.sh" /usr/local/bin/dotenv
-          which dotenv
+          echo $PATH
+          echo which dotenv
+          dotenv --help
+      # - name: Install the dotenv command
+      #   run: |
+      #     chmod +x ./script.sh
+      #     ln -s "$PWD/script.sh" /usr/local/bin/dotenv
+      #     which dotenv
 
-      - name: Move the ./test folder
-        run: |
-          cd ./test
+      # - name: Move to the `./test` folder
+      #   run: |
+      #     cd ./test
 
-      - name: Test `dotenv init` command
-        run: |
-          dotenv init
+      # - name: Test `dotenv init` command
+      #   run: |
+      #     dotenv init
