@@ -36,6 +36,10 @@ jobs:
           sudo ln -s "$PWD/script.sh" /usr/local/sbin/dotenv
           which dotenv
 
+      - name: Install `bats` submodules
+        run: |
+          git submodule update
+
       - name: Run `bats` tests
         working-directory: ./test
         run: |

@@ -99,6 +99,8 @@ shfmt -i 4 -d ./script.sh
 We are using [bats](https://bats-core.readthedocs.io/en/stable/) to write tests, check [test.bats](test/test.bats) for more examples and tests.
 ```bash
 # used on `ci.yml` github action
+# install `bats` bin and `bats-support`, `bats-assert`, `bats-file` submodules
+git submodule update
 # make `test` folder your working directory for all your tests
 cd ./test
 # run the tests
