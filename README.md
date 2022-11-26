@@ -82,7 +82,7 @@ backup                            create a backup file for the `.env` using this
 destroy [CMD_OPTIONS]             remove the `.env` file
         --force                   force the destroy, avoid the prompt message
 ```
-Check the [ci.yml github action](.github/workflows/ci.yml) for more examples and tests.
+Check the [test.bats](test/test.bats) for more examples and tests.
 
 ## Contributing
 Just clone or fork the repository :)
@@ -94,6 +94,15 @@ We are using [shellcheck](https://github.com/koalaman/shellcheck) as script anal
 # used on `ci.yml` github action
 shellcheck ./script.sh
 shfmt -i 4 -d ./script.sh
+```
+### Testing:
+We are using [bats](https://bats-core.readthedocs.io/en/stable/) to write tests, check [test.bats](test/test.bats) for more examples and tests.
+```bash
+# used on `ci.yml` github action
+# make `test` folder your working directory for all your tests
+cd ./test
+# run the tests
+./bats/bin/bats test.bats
 ```
 
 ## License

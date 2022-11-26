@@ -36,20 +36,7 @@ jobs:
           sudo ln -s "$PWD/script.sh" /usr/local/sbin/dotenv
           which dotenv
 
-      - name: Install `bats`
-        working-directory: /home/runner/work
+      - name: Run `bats` tests
+        working-directory: ./test
         run: |
-          git clone https://github.com/bats-core/bats-core.git
-          cd bats-core
-          sudo ./install.sh /usr/local
-          which bats
-
-      # - name: Test `dotenv init` command
-      #   working-directory: ./test
-      #   run: |
-      #     dotenv init
-
-      # - name: Test `dotenv init` command on preexistent `.env` file
-      #   working-directory: ./test
-      #   run: |
-      #     dotenv init
+          ./bats/bin/bats test.bats
