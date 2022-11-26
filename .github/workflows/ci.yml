@@ -37,7 +37,7 @@ jobs:
           which dotenv
 
       - name: Install `bats`
-        working-directory: "~"
+        working-directory: /home/runner/work
         run: |
           git clone https://github.com/bats-core/bats-core.git
           cd bats-core
