@@ -11,7 +11,7 @@ function setup() {
 @test "\`dotenv init\`" {
     run dotenv init
     assert_success
-    assert_output --partial " ✔ The \`$PWD/.env\` file has been successfully created"
+    assert_output --partial " ✔ The \`$PWD/.env\` file has been successfully created !"
 }
 
 @test "\`--path\` option with \`dotenv init\`" {
@@ -36,8 +36,8 @@ function setup() {
 @test "\`dotenv init\` with \`--force\` cmd option(already existent .env file)" {
     touch .env
     run dotenv init --force
-    assert_failure
-    assert_output --partial " ✘ The \`$PWD/.env\` alread exist, you can use the \`--force\` option !"
+    assert_success
+    assert_output --partial " ✔ The \`$PWD/.env\` file has been successfully created !"
 }
 
 
