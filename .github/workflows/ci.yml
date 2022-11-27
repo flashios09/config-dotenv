@@ -39,6 +39,7 @@ jobs:
           which dotenv
 
       - name: Run `bats` tests
+        # make `test` folder the working directory for all tests
+        working-directory: ./test
         run: |
-          cd ./test
           ./bats/bin/bats test.bats
