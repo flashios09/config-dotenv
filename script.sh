@@ -15,7 +15,7 @@ function get_script_file() {
 
 # Constants:
 SCRIPT_FILE="$(get_script_file)"
-SCRIPT_VERSION="0.1.0-alpha.1"
+SCRIPT_VERSION="0.2.0-alpha.1"
 SCRIPT_DESCRIPTION="Config the \`.env\` file, dotenv v$SCRIPT_VERSION"
 TRY_HELP_COMMAND_FOR_MORE_INFORMATION="Try \`$SCRIPT_FILE --help\` for more information"
 KEY_REGEX="[a-zA-Z_][a-zA-Z0-9_]*"
@@ -27,6 +27,7 @@ force=false
 from_file=false
 env_file="$PWD/.env"
 backup_file=false
+delimiter=" "
 
 function cat_help_message() {
     cat <<EOF
@@ -70,7 +71,13 @@ Commands:
   list                              list the env vars
                                     e.g. \`$SCRIPT_FILE list\`
                                     you can use the \`--no-export-prefix\` to list only the vars without "$export_prefix"
-                                    e.g. \`$SCRIPT_FILE --no-export-prefix list\`
+
+  keys [CMD_OPTIONS]                get the list of env var keys separated by whitespace \`" "\`(the default delimiter)
+       --delimiter <character>      single character delimiter, can't be an empty string
+                                    you can use \`\n\`(for newline) or \`,\`, \`:\` ...
+                                    e.g. \`$SCRIPT_FILE keys --delimiter " "\`
+                                    you can use the \`--no-export-prefix\` to get the keys without "$export_prefix"
+                                    e.g. \`$SCRIPT_FILE --no-export-prefix keys\`
 
   has KEY1 [KEY2 ...]               check if key(s) exist(s) and return 0 or 1
                                     e.g. \`$SCRIPT_FILE has DEBUG API_VERSION\`
@@ -131,6 +138,16 @@ function test_backup_file_option() {
     local value="$2"
     if [[ -z "$value" ]]; then
         echo " ✘ Missing \`--backup-file\` option value for the \`$cmd\` command !"
+        echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+        exit 1
+    fi
+}
+
+function test_delimiter_option() {
+    local cmd="$1"
+    local value="$2"
+    if [[ -z "$value" ]]; then
+        echo " ✘ Missing \`--delimiter\` option value for the \`$cmd\` command !"
         echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
         exit 1
     fi
@@ -290,6 +307,29 @@ function case_list() {
 
     echo " ✔ The \`$env_file\` file vars list:"
     _config_styled_hash "$filtered_output"
+}
+
+function case_keys() {
+    local env_file="$1"
+    local export_prefix="$2"
+    local delimiter="$3"
+    local keys_list=""
+
+    throw_an_error_if_env_file_does_not_exist "$env_file"
+
+    filtered_output=$(_strip_comments_and_export_prefix_from_env_file "$env_file" "$export_prefix")
+
+    if [ -z "$filtered_output" ]; then
+        echo " ✘ No vars found for \`$env_file\` !"
+        echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+        exit 1
+    fi
+
+    # first pipe: cut used to keep only the keys(remove the "=VALUE")
+    # second pipe: tr used to force the command `--delimiter` option but it will add an extra delimiter at the end !
+    # third pipe: sed used to remove the extra delimiter added by the `tr` command
+    keys_list=$(echo -e "$filtered_output" | cut -d"=" -f1 | tr '\n' "$delimiter" | sed "s/$delimiter$//")
+    echo -e "$keys_list"
 }
 
 function case_has() {
@@ -621,6 +661,38 @@ while [[ $# -gt 0 ]]; do
         fi
 
         case_list "$env_file" "$export_prefix"
+        exit
+        ;;
+    keys)
+        shift # remove `keys` from command
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+            --delimiter)
+                shift # remove `--delimiter` from command
+                test_delimiter_option "keys" "$1"
+                delimiter="$1"
+                shift # remove `<delimiter_value>` from command
+                ;;
+            -*)
+                echo_invalid_option_for_command "$1" "keys"
+                echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+                exit 1
+                ;;
+            *)
+                echo_invalid_option_for_command "$1" "keys"
+                echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+                exit 1
+                ;;
+            esac
+        done
+
+        if [[ $# -gt 0 ]]; then
+            echo " ✘ The \`keys\` command doesn't accept any extra option !"
+            echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+            exit 1
+        fi
+
+        case_keys "$env_file" "$export_prefix" "$delimiter"
         exit
         ;;
     has)

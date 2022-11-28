@@ -68,6 +68,13 @@ list                              list the env vars
                                   you can use the `--no-export-prefix` to list only the vars without "export "
                                   e.g. `dotenv --no-export-prefix list`
 
+keys [CMD_OPTIONS]                get the list of env var keys separated by whitespace `" "`(the default delimiter)
+     --delimiter <character>      single character delimiter, can't be an empty string
+                                  you can use `\n`(for newline) or `,`, `:` ...
+                                  e.g. `dotenv keys --delimiter " "`
+                                  you can use the `--no-export-prefix` to get the keys without "export "
+                                  e.g. `dotenv --no-export-prefix keys`
+
 has KEY1 [KEY2 ...]               check if key(s) exist(s) and return 0 or 1
                                   e.g. `dotenv has DEBUG API_VERSION`
                                   you can use the verbose flag to get a success or error message

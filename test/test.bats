@@ -230,6 +230,50 @@ function setup() {
     assert_output --partial " ✘ No vars found for \`$PWD/.env\` !"
 }
 
+# tests for `keys` command
+@test "\`dotenv keys\`" {
+    dotenv init
+    dotenv set ENV=development DEBUG=true API_VERSION=v1
+    run dotenv keys
+    assert_success
+    assert_output "ENV DEBUG API_VERSION"
+}
+
+@test "\`dotenv keys\`(no vars found)" {
+    dotenv init
+    run dotenv keys
+    assert_failure
+    assert_output --partial " ✘ No vars found for \`$PWD/.env\` !"
+}
+
+@test "\`dotenv keys\` with \`--delimiter ','\` cmd option" {
+    dotenv init
+    dotenv set ENV=development DEBUG=true API_VERSION=v1
+    run dotenv keys --delimiter ','
+    assert_success
+    assert_output "ENV,DEBUG,API_VERSION"
+}
+
+@test "\`dotenv keys\` with \`--delimiter '\n'\` cmd option" {
+    dotenv init
+    dotenv set ENV=development DEBUG=true API_VERSION=v1
+    run dotenv keys --delimiter '\n'
+    assert_success
+    expected_output=$(echo -e "ENV")
+    expected_output+=$(echo -e "\nDEBUG")
+    expected_output+=$(echo -e "\nAPI_VERSION")
+    assert_output "$expected_output"
+}
+
+@test "\`--no-export-prefix\` option with \`dotenv keys\`" {
+    dotenv init
+    dotenv set ENV=development DEBUG=true API_VERSION=v1
+    dotenv --no-export-prefix set SSH_PORT=22 MYSQL_PORT=3306
+    run dotenv --no-export-prefix keys
+    assert_success
+    assert_output "SSH_PORT MYSQL_PORT"
+}
+
 # tests for `truncate` command
 @test "\`dotenv truncate\` with \`--force\` cmd option" {
     dotenv init
