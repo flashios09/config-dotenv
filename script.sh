@@ -15,7 +15,7 @@ function get_script_file() {
 
 # Constants:
 SCRIPT_FILE="$(get_script_file)"
-SCRIPT_VERSION="0.2.0-alpha.1"
+SCRIPT_VERSION="0.2.1-alpha.1"
 SCRIPT_DESCRIPTION="Config the \`.env\` file, dotenv v$SCRIPT_VERSION"
 TRY_HELP_COMMAND_FOR_MORE_INFORMATION="Try \`$SCRIPT_FILE --help\` for more information"
 KEY_REGEX="[a-zA-Z_][a-zA-Z0-9_]*"
@@ -235,7 +235,9 @@ function case_set() {
         value=$(echo "$var" | cut -d"=" -f2-)
 
         if _key_exists "$filtered_output" "$key"; then
-            env_temp=$(echo -e "$env_temp" | sed -E "s/^$export_prefix$key=.+/$export_prefix$key=$value/")
+            local escaped_value
+            escaped_value=$(_escape_string "$value")
+            env_temp=$(echo -e "$env_temp" | sed -E "s/^$export_prefix$key=.+/$export_prefix$key=$escaped_value/")
             setting+="\n   ✔ The \`$key\` var has been updated !"
         else
             new_var="$export_prefix$key=$value"
@@ -414,6 +416,13 @@ function case_destroy() {
             esac
         fi
     fi
+}
+
+# Escape a given string
+function _escape_string {
+    local string="$1"
+    escaped_string=$(echo "$string" | sed -r 's/([\$\.\*\/\[\\^])/\\\1/g' | sed 's/[]]/\[]]/g')
+    echo "$escaped_string"
 }
 
 function _create_backup_file_and_echo_success_message() {

@@ -110,6 +110,15 @@ function setup() {
     assert_output --partial " ✔ The \`DEBUG\` var has been updated !"
 }
 
+@test "\`dotenv set EXISTENT_KEY=NEW_VALUE_WITH_SPECIAL_CHARS\` update value with special chars" {
+    dotenv init --from "$PWD/.env.default"
+    dotenv set CORS_ALLOW_ORIGINS=https://localhost:4200,https://api.my-app.test
+    run dotenv set CORS_ALLOW_ORIGINS=https://api.my-app.com
+    assert_success
+    assert_file_contains "$PWD/.env" "^export CORS_ALLOW_ORIGINS=https://api.my-app.com"
+    assert_output --partial " ✔ The \`CORS_ALLOW_ORIGINS\` var has been updated !"
+}
+
 # tests for `has` command
 @test "\`dotenv has KEY1 KEY2 ...\`" {
     dotenv init --from "$PWD/.env.default"
