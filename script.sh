@@ -26,6 +26,7 @@ export_prefix="export "
 force=false
 from_file=false
 env_file="$PWD/.env"
+backup_file=false
 
 function cat_help_message() {
     cat <<EOF
@@ -50,6 +51,8 @@ Commands:
                                     e.g. \`$SCRIPT_FILE init --from "\$PWD/.env.default"\`
        --force                      force the init if an \`.env\` already exist, a backup for the existent file will be created
                                     e.g. \`$SCRIPT_FILE init --force\`
+       --backup-file <string>       used with \`--force\` cmd option to force the backup file name instead of auto-naming
+                                    e.g. \`$SCRIPT_FILE init --force --backup-file "\$PWD/.env-20221127235937.bak"\`
 
   get KEY                           get the value of the passed KEY
                                     e.g. \`$SCRIPT_FILE get DEBUG\`, will return the value of the DEBUG env var
@@ -79,8 +82,10 @@ Commands:
   truncate [CMD_OPTIONS]            truncate the \`.env\` file
            --force                  force the truncate, avoid the prompt message
 
-  backup                            create a backup file for the \`.env\` using this format \`<env_file_name>-<now>.bak\`
+  backup [CMD_OPTIONS]              create a backup file for the \`.env\` using this format \`<env_file_name>-<now>.bak\`
                                     e.g. \`$SCRIPT_FILE backup\`, will create a copy from \`.env\` named \`.env-20221125192400.bak\`
+         --backup-file <string>     force the backup file name instead of auto-naming
+                                    e.g. \`$SCRIPT_FILE backup --backup-file "\$PWD/.env-20221127235937.bak"\`
 
   destroy [CMD_OPTIONS]             remove the \`.env\` file
           --force                   force the destroy, avoid the prompt message
@@ -121,10 +126,21 @@ function test_from_option() {
     fi
 }
 
+function test_backup_file_option() {
+    local cmd="$1"
+    local value="$2"
+    if [[ -z "$value" ]]; then
+        echo " ✘ Missing \`--backup-file\` option value for the \`$cmd\` command !"
+        echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+        exit 1
+    fi
+}
+
 function case_init() {
     local env_file="$1"
     local force="$2"
     local from_file="$3"
+    local backup_file="$4"
 
     if [[ "$from_file" != "false" ]] && [[ ! -f "$from_file" ]]; then
         echo " The source file \`$from_file\` used to init the .env file doesn't exist !"
@@ -135,7 +151,7 @@ function case_init() {
     if [ -f "$env_file" ]; then
         if [[ "$force" == "true" ]]; then
             echo "The \`$env_file\` already exist, creating a backup file ..."
-            _create_backup_file_and_echo_success_message "$env_file"
+            _create_backup_file_and_echo_success_message "$env_file" "$backup_file"
         else
             echo " ✘ The \`$env_file\` already exist, you can use the \`--force\` option !"
             echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
@@ -166,7 +182,7 @@ function case_get() {
     # grep <"$env_file" -Eo "$export_prefix([a-zA-Z_][a-zA-Z0-9_]*=.*)" | cut -d" " -f2 | grep "^$key=" | cut -d"=" -f2-
     filtered_output=$(_strip_comments_and_export_prefix_from_env_file "$env_file" "$export_prefix")
     if ! _key_exists "$filtered_output" "$key"; then
-        echo " ✘ Undefined KEY \`$key\` for get command !"
+        echo " ✘ Undefined KEY \`$key\` for \`get\` command !"
         echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
         exit 1
     fi
@@ -307,10 +323,11 @@ function case_has() {
 
 function case_backup() {
     local env_file="$1"
+    local backup_file="$2"
 
     throw_an_error_if_env_file_does_not_exist "$env_file"
 
-    _create_backup_file_and_echo_success_message "$env_file"
+    _create_backup_file_and_echo_success_message "$env_file" "$backup_file"
 }
 
 function case_truncate() {
@@ -361,11 +378,16 @@ function case_destroy() {
 
 function _create_backup_file_and_echo_success_message() {
     local env_file="$1"
+    local backup_file="$2"
     local now
     local env_backup_file
 
-    now=$(date '+%Y%m%d%H%M%S')
-    env_backup_file="$env_file-$now.bak"
+    if [ "$backup_file" != "false" ]; then
+        env_backup_file="$backup_file"
+    else
+        now=$(date '+%Y%m%d%H%M%S')
+        env_backup_file="$env_file-$now.bak"
+    fi
     cp -p "$env_file" "$env_backup_file"
     echo " ✔ The backup file \`$env_backup_file\` of \`$env_file\` has been successfully created !"
 }
@@ -525,6 +547,12 @@ while [[ $# -gt 0 ]]; do
                 shift # remove `--force` from command
                 force="true"
                 ;;
+            --backup-file)
+                shift # remove `--backup-file` from command
+                test_backup_file_option "init" "$1"
+                backup_file="$1"
+                shift # remove `<backup_file_value>` from command
+                ;;
             -*)
                 echo_invalid_option_for_command "$1" "init"
                 echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
@@ -538,7 +566,7 @@ while [[ $# -gt 0 ]]; do
             esac
         done
 
-        case_init "$env_file" "$force" "$from_file"
+        case_init "$env_file" "$force" "$from_file" "$backup_file"
         exit
         ;;
     get)
@@ -633,6 +661,26 @@ while [[ $# -gt 0 ]]; do
         ;;
     backup)
         shift # remove `backup` from command
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+            --backup-file)
+                shift # remove `--backup-file` from command
+                test_backup_file_option "backup" "$1"
+                backup_file="$1"
+                shift # remove `<backup_file_value>` from command
+                ;;
+            -*)
+                echo_invalid_option_for_command "$1" "backup"
+                echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+                exit 1
+                ;;
+            *)
+                echo_invalid_option_for_command "$1" "backup"
+                echo "$TRY_HELP_COMMAND_FOR_MORE_INFORMATION"
+                exit 1
+                ;;
+            esac
+        done
 
         if [[ $# -gt 0 ]]; then
             echo " ✘ The \`backup\` command doesn't accept any extra option !"
@@ -640,7 +688,7 @@ while [[ $# -gt 0 ]]; do
             exit 1
         fi
 
-        case_backup "$env_file"
+        case_backup "$env_file" "$backup_file"
         exit
         ;;
     destroy)

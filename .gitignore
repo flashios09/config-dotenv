@@ -1,4 +1,5 @@
 /test/.env
+/test/fixture/ls_output
 
 # ignore `.gfs` git file status folder
 .gfs/

@@ -14,7 +14,7 @@ Config the `.env` file(inspired from [dokku config plugin](https://github.com/do
 ## Installation
 ```bash
 # Clone the repo
-git clone git@github.com:flashios09/config-dotenv.git
+git clone https://github.com/flashios09/config-dotenv.git
 # CD to `config-dotenv` folder
 cd config-dotenv
 # Make `script.sh` executable
@@ -47,6 +47,8 @@ init [CMD_OPTIONS]                create an empty `.env` file, only if `.env` no
                                   e.g. `dotenv init --from "$PWD/.env.default"`
      --force                      force the init if an `.env` already exist, a backup for the existent file will be created
                                   e.g. `dotenv init --force`
+     --backup-file <string>       used with `--force` cmd option to force the backup file name instead of auto-naming
+                                  e.g. `dotenv init --force --backup-file "$PWD/.env-20221127235937.bak"`
 
 get KEY                           get the value of the passed KEY
                                   e.g. `dotenv get DEBUG`, will return the value of the DEBUG env var
@@ -76,8 +78,10 @@ has KEY1 [KEY2 ...]               check if key(s) exist(s) and return 0 or 1
 truncate [CMD_OPTIONS]            truncate the `.env` file
          --force                  force the truncate, avoid the prompt message
 
-backup                            create a backup file for the `.env` using this format `<env_file_name>-<now>.bak`
+backup [CMD_OPTIONS]              create a backup file for the `.env` using this format `<env_file_name>-<now>.bak`
                                   e.g. `dotenv backup`, will create a copy from `.env` named `.env-20221125192400.bak`
+       --backup-file <string>     force the backup file name instead of auto-naming
+                                  e.g. `dotenv backup --backup-file "$PWD/.env-20221127235937.bak"`
 
 destroy [CMD_OPTIONS]             remove the `.env` file
         --force                   force the destroy, avoid the prompt message
